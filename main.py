@@ -65,7 +65,7 @@ def load_vectorstore_database():
     
     vector_store = SupabaseVectorStore(
     client=supabase,
-    embedding=OpenAIEmbeddings(model="text-embedding-3-small"), # the issue accuraces because you change ebeddings moedl from ada02 to 3small, you have to remove the previous data in supabase and insert new data with the new embedding model 3small.
+    embedding=OpenAIEmbeddings(model="text-embedding-3-small"),
     table_name="documents",
     query_name="match_documents",
 )
@@ -243,11 +243,6 @@ def chat_bot(pdf_url, pdf_files, website_url, open_chat, model, temperature):
                     AIMessage(content="Hello, I am a bot. How can I help you?"),
                 ]
                 
-            # if "vector_store" not in st.session_state:
-            #     st.session_state.vector_store = get_vectorstore_from_url(website_url) 
-            
-            
-            # model = st.selectbox('Select a model (default: OPENAI Chatgpt 3.5 Turbo).', ('Chatgpt 3.5 Turbo', 'llama2', 'mistral', 'gemma'))
 
 
             # user input
@@ -256,7 +251,6 @@ def chat_bot(pdf_url, pdf_files, website_url, open_chat, model, temperature):
                 response = get_response(user_query, st.session_state['vector_store'], model, temperature)
                 st.session_state.chat_history.append(HumanMessage(user_query))
                 st.session_state.chat_history.append(AIMessage(response))
-                        
                         
                         
             # Conversation
@@ -271,8 +265,6 @@ def chat_bot(pdf_url, pdf_files, website_url, open_chat, model, temperature):
 
 
 def main():
-    
-
 
     # app config
     im = Image.open("icon32.ico")
@@ -329,9 +321,6 @@ def main():
 
         if url_type == 'PDF_url' and pdf_url and '/' not in pdf_url:
             st.info("Please Enter a Valid Folder URL")
-            
-        # elif url_type == 'PDF_url' and pdf_url and '/' in pdf_url:
-        #     st.info("Please Enter a Valid Folder URL")
             
         elif url_type == 'Website_url' and website_url and 'https://' not in website_url:
             st.info("Please Enter a Valid Website URL")
