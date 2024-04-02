@@ -133,6 +133,7 @@ venv.bak/
 
 # txt files
 prompts.py
+test.py
 *.txt
 # Spyder project settings
 .spyderproject

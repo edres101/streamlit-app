@@ -1,4 +1,5 @@
 import os
+from PIL import Image
 import streamlit as st
 from pypdf import PdfReader
 from dotenv import load_dotenv
@@ -31,27 +32,31 @@ supabase: Client = create_client(supabase_url, supabase_key)
 
 
 
-def choose_llm_model(llm:str):
+def choose_llm_model(llm:str, temperature:float):
     """
     Chooses the LLM model based on the input parameter.
 
     Args:
         llm (str): The name of the LLM model.
+        temperature (float): The temperature of the LLM model.
 
     Returns:
-        An instance of the selected LLM model.
+        An instance of the selected LLM model and its temperature.
     """
-    if llm == 'Chatgpt 3.5 Turbo':
-        return ChatOpenAI()
+    if llm == 'ChatGPT-4':
+        return ChatOpenAI(model="gpt-4-0125-preview", temperature=temperature)
+    
+    if llm == 'ChatGPT-3.5':
+        return ChatOpenAI(model="gpt-3.5-turbo", temperature=temperature)
     
     elif llm == 'llama2':
-        return ChatGroq(temperature=0.5, model_name="llama2-70b-4096")
+        return ChatGroq(model_name="llama2-70b-4096", temperature=temperature)
     
     elif llm == 'mistral':
-        return ChatGroq(temperature=0.5, model_name="mixtral-8x7b-32768")
+        return ChatGroq(model_name="mixtral-8x7b-32768", temperature=temperature)
     
     elif llm == 'gemma':
-        return ChatGroq(temperature=0.5, model_name="gemma-7b-it")
+        return ChatGroq(model_name="gemma-7b-it", temperature=temperature)
     
     
     
@@ -60,7 +65,7 @@ def load_vectorstore_database():
     
     vector_store = SupabaseVectorStore(
     client=supabase,
-    embedding=OpenAIEmbeddings(model="text-embedding-3-small"),
+    embedding=OpenAIEmbeddings(model="text-embedding-3-small"), # the issue accuraces because you change ebeddings moedl from ada02 to 3small, you have to remove the previous data in supabase and insert new data with the new embedding model 3small.
     table_name="documents",
     query_name="match_documents",
 )
@@ -138,9 +143,9 @@ def get_vectorstore_from_website_url(url):
 
     return vector_store
 
-def get_context_retriever_chain(vector_store, model):
+def get_context_retriever_chain(vector_store, model, temperature):
     
-    llm = choose_llm_model(model)
+    llm = choose_llm_model(model, temperature)
     
     retriever = vector_store.as_retriever()
     
@@ -157,9 +162,9 @@ def get_context_retriever_chain(vector_store, model):
     
     
     
-def get_conversational_rag_chain(history_aware_retriever, model): 
+def get_conversational_rag_chain(history_aware_retriever, model, temperature): 
     
-    llm = choose_llm_model(model)
+    llm = choose_llm_model(model, temperature)
     
     prompt = ChatPromptTemplate.from_messages([
       ("system", "Answer the user's questions based on the below context if there is no context or if you do not know the answer tell the user you do not know, do not create any informatin out of the context:\n\n{context}"),
@@ -196,10 +201,10 @@ def conversation_rag_chain(rag_chain):
 
 
 
-def get_response(user_input, vectore_store, llm):
+def get_response(user_input, vectore_store, llm, temperature):
     
-    retriever_chain = get_context_retriever_chain(vectore_store, llm)
-    rag_chain = get_conversational_rag_chain(retriever_chain, llm)
+    retriever_chain = get_context_retriever_chain(vectore_store, llm, temperature)
+    rag_chain = get_conversational_rag_chain(retriever_chain, llm, temperature)
     conversational_rag_chain = conversation_rag_chain(rag_chain)
     
     response = conversational_rag_chain.invoke(
@@ -213,7 +218,7 @@ def get_response(user_input, vectore_store, llm):
     
     
     
-def chat_bot(pdf_url, pdf_files, website_url, open_chat):
+def chat_bot(pdf_url, pdf_files, website_url, open_chat, model, temperature):
     with st.spinner("Processing..."):
             
             # session state
@@ -242,13 +247,13 @@ def chat_bot(pdf_url, pdf_files, website_url, open_chat):
             #     st.session_state.vector_store = get_vectorstore_from_url(website_url) 
             
             
-            model = st.selectbox('Select a model (default: OPENAI Chatgpt 3.5 Turbo).', ('Chatgpt 3.5 Turbo', 'llama2', 'mistral', 'gemma'))
+            # model = st.selectbox('Select a model (default: OPENAI Chatgpt 3.5 Turbo).', ('Chatgpt 3.5 Turbo', 'llama2', 'mistral', 'gemma'))
 
 
             # user input
             user_query = st.chat_input("Type your message here...")
             if user_query is not None and user_query != "":
-                response = get_response(user_query, st.session_state['vector_store'], model)
+                response = get_response(user_query, st.session_state['vector_store'], model, temperature)
                 st.session_state.chat_history.append(HumanMessage(user_query))
                 st.session_state.chat_history.append(AIMessage(response))
                         
@@ -266,9 +271,12 @@ def chat_bot(pdf_url, pdf_files, website_url, open_chat):
 
 
 def main():
+    
+
 
     # app config
-    st.set_page_config(page_title="Chat with websites", page_icon="🤖")
+    im = Image.open("icon32.ico")
+    st.set_page_config(page_title="Chat with websites", page_icon=im)
     st.title("Chat Bot")
 
 
@@ -295,6 +303,11 @@ def main():
             pdf_files = st.file_uploader("Choose PDF files", type="pdf", accept_multiple_files=True)
             
         st.button('Submit')
+        st.divider()
+        
+        st.subheader("Select AI Model & Temperature")
+        model = st.selectbox('Default: OPENAI ChatGPT 3.5', ('ChatGPT-3.5', 'ChatGPT-4',  'llama2', 'mistral', 'gemma'))
+        temperature = st.slider('Temperature', min_value=0.0, max_value=2.0, value=0.7, step=0.1)
         
         
     if not open_chat:
@@ -308,7 +321,7 @@ def main():
             st.info("Please Upload PDF files")
 
         else:
-            chat_bot(pdf_url, pdf_files, website_url, open_chat)
+            chat_bot(pdf_url, pdf_files, website_url, open_chat, model, temperature)
             
             
     else:
@@ -327,7 +340,7 @@ def main():
             st.info("Please Upload PDF files")
 
         else:
-            chat_bot(pdf_url, pdf_files, website_url, open_chat)
+            chat_bot(pdf_url, pdf_files, website_url, open_chat, model, temperature)
     
 if __name__ == '__main__':
     main()
