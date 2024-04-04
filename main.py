@@ -20,6 +20,7 @@ from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.chains.history_aware_retriever import create_history_aware_retriever
 from langchain_community.chat_message_histories.in_memory import ChatMessageHistory
 
+from langchain_google_genai import ChatGoogleGenerativeAI
 
 load_dotenv()
 
@@ -49,13 +50,16 @@ def choose_llm_model(llm:str, temperature:float):
     if llm == 'ChatGPT-3.5':
         return ChatOpenAI(model="gpt-3.5-turbo", temperature=temperature)
     
-    elif llm == 'llama2':
+    elif llm == 'Gemini-Pro':
+        return ChatGoogleGenerativeAI(model="gemini-pro", temperature=temperature, convert_system_message_to_human=True)
+    
+    elif llm == 'Llama2':
         return ChatGroq(model_name="llama2-70b-4096", temperature=temperature)
     
-    elif llm == 'mistral':
+    elif llm == 'Mistral':
         return ChatGroq(model_name="mixtral-8x7b-32768", temperature=temperature)
     
-    elif llm == 'gemma':
+    elif llm == 'Gemma':
         return ChatGroq(model_name="gemma-7b-it", temperature=temperature)
     
     
@@ -298,7 +302,7 @@ def main():
         st.divider()
         
         st.subheader("Select AI Model & Temperature")
-        model = st.selectbox('Default: OPENAI ChatGPT 3.5', ('ChatGPT-3.5', 'ChatGPT-4',  'llama2', 'mistral', 'gemma'))
+        model = st.selectbox('Default: OPENAI ChatGPT 3.5', ('ChatGPT-3.5', 'ChatGPT-4', 'Gemini-Pro',  'Llama2', 'Mistral', 'Gemma'))
         temperature = st.slider('Temperature', min_value=0.0, max_value=2.0, value=0.7, step=0.1)
         
         
