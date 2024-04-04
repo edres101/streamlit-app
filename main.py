@@ -5,6 +5,7 @@ from pypdf import PdfReader
 from dotenv import load_dotenv
 from langchain_groq import ChatGroq
 from supabase import Client, create_client
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.messages import AIMessage, HumanMessage
@@ -20,7 +21,6 @@ from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.chains.history_aware_retriever import create_history_aware_retriever
 from langchain_community.chat_message_histories.in_memory import ChatMessageHistory
 
-from langchain_google_genai import ChatGoogleGenerativeAI
 
 load_dotenv()
 
