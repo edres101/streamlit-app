@@ -32,12 +32,16 @@ frozenlist==1.4.1
 fsspec==2024.2.0
 gitdb==4.0.11
 GitPython==3.1.42
+google-ai-generativelanguage==0.4.0
+google-api-core==2.18.0
 google-auth==2.28.2
+google-generativeai==0.4.1
 googleapis-common-protos==1.63.0
 gotrue==2.4.1
 greenlet==3.0.3
 groq==0.4.2
 grpcio==1.62.1
+grpcio-status==1.62.1
 grpcio-tools==1.62.1
 h11==0.14.0
 h2==4.1.0
@@ -61,6 +65,7 @@ kubernetes==29.0.0
 langchain==0.1.12
 langchain-community==0.0.28
 langchain-core==0.1.32
+langchain-google-genai==1.0.1
 langchain-groq==0.0.1
 langchain-openai==0.0.8
 langchain-text-splitters==0.0.1
@@ -100,6 +105,7 @@ pillow==10.2.0
 portalocker==2.8.2
 postgrest==0.16.1
 posthog==3.5.0
+proto-plus==1.23.0
 protobuf==4.25.3
 pulsar-client==3.4.0
 pyarrow==15.0.1
@@ -119,7 +125,7 @@ pyreadline3==3.4.1
 python-dateutil==2.9.0.post0
 python-dotenv==1.0.1
 pytz==2024.1
-# pywin32==306 # this was removed becuase the deployment issue.
+# pywin32==306
 PyYAML==6.0.1
 qdrant-client==1.8.0
 realtime==1.0.2
