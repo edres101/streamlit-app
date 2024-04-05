@@ -51,7 +51,9 @@ def choose_llm_model(llm:str, temperature:float):
         return ChatOpenAI(model="gpt-3.5-turbo", temperature=temperature)
     
     elif llm == 'Gemini-Pro':
-        return ChatGoogleGenerativeAI(model="gemini-pro", temperature=temperature, convert_system_message_to_human=True)
+        if temperature >= 1:
+            temperature = 1
+            return ChatGoogleGenerativeAI(model="gemini-pro", temperature=temperature, convert_system_message_to_human=True)
     
     elif llm == 'Llama2':
         return ChatGroq(model_name="llama2-70b-4096", temperature=temperature)
@@ -207,17 +209,36 @@ def conversation_rag_chain(rag_chain):
 
 def get_response(user_input, vectore_store, llm, temperature):
     
-    retriever_chain = get_context_retriever_chain(vectore_store, llm, temperature)
-    rag_chain = get_conversational_rag_chain(retriever_chain, llm, temperature)
-    conversational_rag_chain = conversation_rag_chain(rag_chain)
+    # try:
+    # retriever_chain = get_context_retriever_chain(vectore_store, llm, temperature)
+    # rag_chain = get_conversational_rag_chain(retriever_chain, llm, temperature)
+    # conversational_rag_chain = conversation_rag_chain(rag_chain)
     
-    response = conversational_rag_chain.invoke(
-    {"input": user_input},
-    config={
-        "configurable": {"session_id": "abc123"}
-    },)["answer"]
+    # except:
+        
+    try:
+        # Attempt to retrieve the context retriever chain
+        retriever_chain = get_context_retriever_chain(vectore_store, llm, temperature)
+        
+        # Attempt to retrieve the conversational RAG chain
+        rag_chain = get_conversational_rag_chain(retriever_chain, llm, temperature)
+        
+        # Attempt to create the conversational RAG chain
+        conversational_rag_chain = conversation_rag_chain(rag_chain)
     
-    return response
+        response = conversational_rag_chain.invoke(
+        {"input": user_input},
+        config={
+            "configurable": {"session_id": "abc123"}
+        },)["answer"]
+        
+        return response
+    
+    except Exception as e:
+        # Handle any exceptions that occur during the process
+        return "ChatGPT-4 is on the way, consider using a different model. If errors persist with another model, reduce the temperature setting."
+    
+    
     
     
     
@@ -261,7 +282,10 @@ def chat_bot(pdf_url, pdf_files, website_url, open_chat, model, temperature):
             for message in st.session_state.chat_history:
                 if isinstance(message, AIMessage):
                     with st.chat_message("AI"):
-                        st.markdown(message.content)
+                        if message.content == 'ChatGPT-4 is on the way, consider using a different model. If errors persist with another model, reduce the temperature setting.':
+                            st.error(message.content)
+                        else:
+                            st.markdown(message.content)
                 elif isinstance(message, HumanMessage):
                     with st.chat_message("Human"):
                         st.markdown(message.content)
@@ -279,7 +303,8 @@ def main():
 
     with st.sidebar:
         st.header("Settings")
-        open_chat = st.toggle('Use the Existing Database')
+        if open_chat := st.toggle('Use the Existing Database'):
+            st.success('Successfully Connected!')
         url_type = st.selectbox('Choose URL type', ('PDF_url', 'PDF_files', 'Website_url'))
         
         
