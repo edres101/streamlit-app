@@ -131,10 +131,12 @@ venv.bak/
 # Pdf files
 *.pdf
 
-# txt files
+# txt files and python
 prompts.py
 test.py
 one.py
+app.py
+models.py
 *.txt
 # Spyder project settings
 .spyderproject
