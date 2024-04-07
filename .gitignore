@@ -131,9 +131,6 @@ venv.bak/
 # Pdf files
 *.pdf
 
-# pipfile
-Pipfile
-
 # txt files and python
 prompts.py
 test.py
